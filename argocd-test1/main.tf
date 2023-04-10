@@ -30,6 +30,14 @@ resource "helm_release" "argocd" {
   version    = "3.26.12"
   namespace  = "argocd"
 
+  values = [
+    <<-EOT
+    server:
+      service:
+        type: LoadBalancer
+    EOT
+  ]
+
   set {
     name  = "server.ingress.enabled"
     value = "true"
@@ -58,13 +66,7 @@ resource "helm_release" "nginx_ingress" {
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
   
-  values = [
-    <<-EOT
-    server:
-      service:
-        type: LoadBalancer
-    EOT
-  ]
+
 
   set {
     name  = "controller.replicaCount"
