@@ -19,8 +19,8 @@ provider "kubernetes" {
 }
 
 data "azurerm_kubernetes_cluster" "this" {
-  name                = "my-aks-cluster2"
-  resource_group_name = "my-rg2"
+  name                = "my-aks-cluster3"
+  resource_group_name = "my-rg3"
 }
 
 resource "helm_release" "argocd" {
@@ -37,7 +37,7 @@ resource "helm_release" "argocd" {
 
   set {
     name  = "server.ingress.hosts[0]"
-    value = "argocd.climacs.dev"
+    value = "argocd.climacs.net"
   }
 
   set {
