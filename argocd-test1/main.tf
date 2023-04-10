@@ -57,6 +57,14 @@ resource "helm_release" "nginx_ingress" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
+  
+  values = [
+    <<-EOT
+    server:
+      service:
+        type: LoadBalancer
+    EOT
+  ]
 
   set {
     name  = "controller.replicaCount"
