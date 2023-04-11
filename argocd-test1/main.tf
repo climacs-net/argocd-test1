@@ -30,13 +30,6 @@ resource "helm_release" "argocd" {
   version    = "3.26.12"
   namespace  = "argocd"
 
-  values = [
-    <<-EOT
-    server:
-      service:
-        type: LoadBalancer
-    EOT
-  ]
 
   set {
     name  = "server.ingress.enabled"
