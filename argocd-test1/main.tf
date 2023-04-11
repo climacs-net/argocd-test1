@@ -109,7 +109,7 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
     spec = {
       acme = {
-        email = "gary.c.climacosa@dxc.com" # Replace this with your own email address
+        email = "your-email@example.com" # Replace this with your own email address
         server = "https://acme-v02.api.letsencrypt.org/directory"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
@@ -126,7 +126,10 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
       }
     }
   }
+
+  depends_on = [helm_release.cert_manager]
 }
+
 
 resource "kubernetes_manifest" "argocd_server_ingress" {
   provider = kubernetes
