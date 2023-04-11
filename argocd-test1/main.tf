@@ -114,7 +114,7 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
     spec = {
       acme = {
-        email = "your-email@example.com" # Replace this with your own email address
+        email = "gary.c.climacosa@dxc.com" # Replace this with your own email address
         server = "https://acme-v02.api.letsencrypt.org/directory"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
