@@ -23,6 +23,10 @@ data "azurerm_kubernetes_cluster" "this" {
   resource_group_name = "my-rg3"
 }
 
+data "kubernetes_custom_resource_definition" "clusterissuer_crd" {
+  name = "clusterissuers.cert-manager.io"
+}
+
 resource "helm_release" "argocd" {
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
@@ -127,7 +131,10 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
   }
 
-  depends_on = [helm_release.cert_manager]
+  depends_on = [
+    helm_release.cert_manager,
+    data.kubernetes_custom_resource_definition.clusterissuer_crd
+  ]
 }
 
 
