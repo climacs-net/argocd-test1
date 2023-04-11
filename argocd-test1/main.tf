@@ -80,11 +80,6 @@ resource "kubernetes_namespace" "ingress_nginx" {
   }
 }
 
-data "helm_repository" "jetstack" {
-  name = "jetstack"
-  url  = "https://charts.jetstack.io"
-}
-
 resource "kubernetes_namespace" "cert_manager" {
   metadata {
     name = "cert-manager"
@@ -93,7 +88,7 @@ resource "kubernetes_namespace" "cert_manager" {
 
 resource "helm_release" "cert_manager" {
   name       = "cert-manager"
-  repository = data.helm_repository.jetstack.metadata.0.name
+  repository = "https://charts.jetstack.io"
   chart      = "cert-manager"
   namespace  = kubernetes_namespace.cert_manager.metadata.0.name
 
@@ -114,7 +109,7 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
     spec = {
       acme = {
-        email = "gary.c.climacosa@dxc.com" # Replace this with your own email address
+        email = "your-email@example.com" # Replace this with your own email address
         server = "https://acme-v02.api.letsencrypt.org/directory"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
