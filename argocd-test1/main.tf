@@ -23,8 +23,11 @@ data "azurerm_kubernetes_cluster" "this" {
   resource_group_name = "my-rg3"
 }
 
-data "kubernetes_custom_resource_definition" "clusterissuer_crd" {
-  name = "clusterissuers.cert-manager.io"
+
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = "argocd"
+  }
 }
 
 resource "helm_release" "argocd" {
@@ -50,9 +53,10 @@ resource "helm_release" "argocd" {
   }
 }
 
-resource "kubernetes_namespace" "argocd" {
+
+resource "kubernetes_namespace" "ingress_nginx" {
   metadata {
-    name = "argocd"
+    name = "ingress-nginx"
   }
 }
 
@@ -78,11 +82,6 @@ resource "helm_release" "nginx_ingress" {
   }
 }
 
-resource "kubernetes_namespace" "ingress_nginx" {
-  metadata {
-    name = "ingress-nginx"
-  }
-}
 
 resource "kubernetes_namespace" "cert_manager" {
   metadata {
@@ -101,6 +100,12 @@ resource "helm_release" "cert_manager" {
     value = "true"
   }
 }
+
+resource "time_sleep" "wait_for_cert_manager" {
+  depends_on = [helm_release.cert_manager]
+  create_duration = "120s"
+}
+
 
 resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
   provider = kubernetes
@@ -131,12 +136,8 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
   }
 
-  depends_on = [
-    helm_release.cert_manager,
-    data.kubernetes_custom_resource_definition.clusterissuer_crd
-  ]
+  depends_on = [time_sleep.wait_for_cert_manager]
 }
-
 
 resource "kubernetes_manifest" "argocd_server_ingress" {
   provider = kubernetes
@@ -183,4 +184,3 @@ resource "kubernetes_manifest" "argocd_server_ingress" {
     }
   }
 }
-
