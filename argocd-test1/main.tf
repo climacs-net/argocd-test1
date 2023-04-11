@@ -103,7 +103,7 @@ resource "helm_release" "cert_manager" {
 
 resource "time_sleep" "wait_for_cert_manager" {
   depends_on = [helm_release.cert_manager]
-  create_duration = "120s"
+  create_duration = "900s"
 }
 
 
@@ -118,7 +118,7 @@ resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
     }
     spec = {
       acme = {
-        email = "your-email@example.com" # Replace this with your own email address
+        email = "gary.c.climacosa@dxc.com" # Replace this with your own email address
         server = "https://acme-v02.api.letsencrypt.org/directory"
         privateKeySecretRef = {
           name = "letsencrypt-prod"
