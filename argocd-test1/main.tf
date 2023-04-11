@@ -30,7 +30,6 @@ resource "helm_release" "argocd" {
   version    = "3.26.12"
   namespace  = "argocd"
 
-
   set {
     name  = "server.ingress.enabled"
     value = "true"
@@ -58,8 +57,6 @@ resource "helm_release" "nginx_ingress" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
-  
-
 
   set {
     name  = "controller.replicaCount"
@@ -83,6 +80,59 @@ resource "kubernetes_namespace" "ingress_nginx" {
   }
 }
 
+data "helm_repository" "jetstack" {
+  name = "jetstack"
+  url  = "https://charts.jetstack.io"
+}
+
+resource "kubernetes_namespace" "cert_manager" {
+  metadata {
+    name = "cert-manager"
+  }
+}
+
+resource "helm_release" "cert_manager" {
+  name       = "cert-manager"
+  repository = data.helm_repository.jetstack.metadata.0.name
+  chart      = "cert-manager"
+  namespace  = kubernetes_namespace.cert_manager.metadata.0.name
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+}
+
+resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
+  provider = kubernetes
+
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata = {
+      name = "letsencrypt-prod"
+    }
+    spec = {
+      acme = {
+        email = "your-email@example.com" # Replace this with your own email address
+        server = "https://acme-v02.api.letsencrypt.org/directory"
+        privateKeySecretRef = {
+          name = "letsencrypt-prod"
+        }
+        solvers = [
+          {
+            http01 = {
+              ingress = {
+                class = "nginx"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+
 resource "kubernetes_manifest" "argocd_server_ingress" {
   provider = kubernetes
 
@@ -93,10 +143,17 @@ resource "kubernetes_manifest" "argocd_server_ingress" {
       name      = "argocd-server-ingress"
       namespace = "argocd"
       annotations = {
-        "kubernetes.io/ingress.class" = "nginx"
+        "kubernetes.io/ingress.class"                = "nginx"
+        "cert-manager.io/cluster-issuer"             = kubernetes_manifest.letsencrypt_clusterissuer.manifest.metadata.name
       }
     }
     spec = {
+      tls = [
+        {
+          hosts = ["argocd.climacs.net"]
+          secretName = "argocd-server-tls"
+        }
+      ]
       rules = [
         {
           host = "argocd.climacs.net"
