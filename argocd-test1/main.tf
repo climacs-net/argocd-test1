@@ -95,7 +95,7 @@ resource "helm_release" "cert_manager" {
   chart      = "cert-manager"
   namespace  = kubernetes_namespace.cert_manager.metadata.0.name
 
-  set {
+ set {
     name  = "installCRDs"
     value = "true"
   }
@@ -103,8 +103,9 @@ resource "helm_release" "cert_manager" {
 
 resource "time_sleep" "wait_for_cert_manager" {
   depends_on = [helm_release.cert_manager]
-  create_duration = "900s"
+  create_duration = "1800s" # Increase the wait time to 30 minutes
 }
+
 
 
 resource "kubernetes_manifest" "letsencrypt_clusterissuer" {
