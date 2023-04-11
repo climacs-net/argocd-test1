@@ -90,3 +90,42 @@ resource "kubernetes_namespace" "ingress_nginx" {
   }
 }
 
+resource "kubernetes_manifest" "argocd_server_ingress" {
+  provider = kubernetes
+
+  manifest = {
+    apiVersion = "networking.k8s.io/v1"
+    kind       = "Ingress"
+    metadata = {
+      name      = "argocd-server-ingress"
+      namespace = "argocd"
+      annotations = {
+        "kubernetes.io/ingress.class" = "nginx"
+      }
+    }
+    spec = {
+      rules = [
+        {
+          host = "argocd.climacs.net"
+          http = {
+            paths = [
+              {
+                path     = "/"
+                pathType = "Prefix"
+                backend = {
+                  service = {
+                    name = "argocd-server"
+                    port = {
+                      number = 80
+                    }
+                  }
+                }
+              },
+            ]
+          }
+        },
+      ]
+    }
+  }
+}
+
