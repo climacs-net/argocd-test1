@@ -30,6 +30,14 @@ resource "helm_release" "argocd" {
   version    = "3.26.12"
   namespace  = "argocd"
 
+  #use in climacs sandbox to get external ip address to point to argocd.climacs.net
+  values = [
+    <<-EOT
+    server:
+      service:
+        type: LoadBalancer
+    EOT
+  ]
 
   set {
     name  = "server.ingress.enabled"
