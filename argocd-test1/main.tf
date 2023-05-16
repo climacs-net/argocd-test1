@@ -19,8 +19,8 @@ provider "kubernetes" {
 }
 
 data "azurerm_kubernetes_cluster" "this" {
-  name                = "my-aks-cluster3"
-  resource_group_name = "my-rg3"
+  name                = "my-aks-cluster5"
+  resource_group_name = "my-rg5"
 }
 
 resource "helm_release" "argocd" {
