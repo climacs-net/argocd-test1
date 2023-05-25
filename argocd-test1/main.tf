@@ -45,11 +45,6 @@ resource "helm_release" "argocd" {
   }
 
   set {
-    name  = "server.ingress.hosts[0]"
-    value = "argocd.climacs.net"
-  }
-
-  set {
     name  = "server.ingress.annotations.kubernetes\\.io/ingress\\.class"
     value = "nginx"
   }
@@ -66,8 +61,6 @@ resource "helm_release" "nginx_ingress" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
-  
-
 
   set {
     name  = "controller.replicaCount"
@@ -102,6 +95,7 @@ resource "kubernetes_manifest" "argocd_server_ingress" {
       namespace = "argocd"
       annotations = {
         "kubernetes.io/ingress.class" = "nginx"
+        "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
       }
     }
     spec = {
@@ -111,7 +105,7 @@ resource "kubernetes_manifest" "argocd_server_ingress" {
           http = {
             paths = [
               {
-                path     = "/"
+                path     = "/argocd-v1(/|$)(.*)"
                 pathType = "Prefix"
                 backend = {
                   service = {
@@ -129,4 +123,5 @@ resource "kubernetes_manifest" "argocd_server_ingress" {
     }
   }
 }
+
 
